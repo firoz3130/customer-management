@@ -66,7 +66,34 @@ function getCustomerList() {
         console.error('Error while fetching customer list:', error);
     });
 }
+function createCustomer() {
+    first_name = document.getElementById('first_name').value;
+    last_name= document.getElementById('last_name').value;
+    email = document.getElementById('email').value;
+    phone = document.getElementById('phone').value;
+    address = document.getElementById('address').value;
+    city = document.getElementById('city').value;
+    state = document.getElementById('state').value;
+}
+function updateCustomer(){
+    first_name = document.getElementById('first_name').value;
+    last_name= document.getElementById('last_name').value;
+    email = document.getElementById('email').value;
+    phone = document.getElementById('phone').value;
+    address = document.getElementById('address').value;
+    city = document.getElementById('city').value;
+    state = document.getElementById('state').value;
 
+}
+function deleteCustomer(){
+    first_name= document.getElementById('first_name').value.trim();
+    last_name= document.getElementById('last_name').value.trim();
+    email = document.getElementById('email').value.trim();
+    phone = document.getElementById('phone').value.trim();
+    address = document.getElementById('address').value.trim();
+    city = document.getElementById('city').value.trim();
+    state = document.getElementById('state').value.trim();  
+}
 // Other functions: createCustomer(), updateCustomer(), deleteCustomer()
 // These functions will be similar to the getCustomerList() function,
 // but they will use POST requests with appropriate data and headers.
