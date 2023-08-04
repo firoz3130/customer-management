@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer Management</title>
+</head>
+<body>
+    <h1>Customer Management System</h1>
+
+    <!-- Login Form -->
+    <form id="loginForm">
+        <label for="login_id">Username:</label>
+        <input type="text" id="login_id" name="login_id" required><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br>
+        <input type="button" value="Login" onclick="login()">
+    </form>
+
+    <!-- New Customer Form -->
+    <h2>Create New Customer</h2>
+    <form id="newCustomerForm" style="display:none;">
+        <!-- ... input fields for customer data ... -->
+        <input type="button" value="Create" onclick="createCustomer()">
+    </form>
+
+    <!-- Customer List Table -->
+    <h2>Customer List</h2>
+    <table id="customerTable" border="1" style="display:none;">
+        <!-- ... table header ... -->
+    </table>
+
+    <!-- Buttons -->
+    <button id="createBtn" onclick="showCreateForm()">Create New Customer</button>
+    <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
+
+    <script src="script.js"></script>
+</body>
+</html>
