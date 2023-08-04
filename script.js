@@ -43,6 +43,7 @@ function login() {
 function getCustomerList() {
     // Make a GET request to the API to get the customer list
     // Replace the URL with the actual API endpoint
+    
     fetch('https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=get_customer_list', {
         method: 'GET',
         headers: {
@@ -56,6 +57,7 @@ function getCustomerList() {
         customerTable.innerHTML = ''; // Clear previous data
         data.forEach(customer => {
             const row = customerTable.insertRow();
+            
             // Add table cells and populate customer data
             // Modify this part based on your data structure
         });
