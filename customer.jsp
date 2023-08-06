@@ -1,0 +1,83 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer Management</title>
+</head>
+<body>
+    <h1>Customer Management System</h1>
+
+    <!-- Login Form -->
+    <form id="loginForm">
+        <label for="login_id">Username:</label>
+        <input type="text" id="login_id" name="login_id" required><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br>
+        <input type="button" value="Login" onclick="login()">
+    </form>
+
+    <!-- Customer List Table -->
+    <h2>Customer List</h2>
+    <button id="createBtn" onclick="showCreateForm()">Create New Customer</button>
+    <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
+
+    <table border="2" id="customerTable" style="display:block;">
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Address</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Action</th>
+        </tr>
+        <!-- The customer list rows will be dynamically added here using JavaScript -->
+        <c:forEach var="customer" items="${customerList}">
+            <tr>
+                <td>${customer.first_name}</td>
+                <td>${customer.last_name}</td>
+                <td>${customer.address}</td>
+                <td>${customer.city}</td>
+                <td>${customer.state}</td>
+                <td>${customer.email}</td>
+                <td>${customer.phone}</td>
+                <td>
+                    <button onclick="deleteCustomer('${customer.uuid}')">Delete</button>
+                    <button onclick="updateCustomer('${customer.uuid}')">Update</button>
+                </td>
+            </tr>
+        </c:forEach>
+    </table>
+
+    <!-- New Customer Form -->
+    <h2>Create New Customer</h2>
+    <form id="newCustomerForm" style="display:none;">
+        <label for="firstName">First Name:</label>
+        <input type="text" id="firstName" name="firstName" required><br>
+
+        <label for="lastName">Last Name:</label>
+        <input type="text" id="lastName" name="lastName" required><br>
+
+        <label for="address">Address:</label>
+        <input type="text" id="address" name="address" required><br>
+
+        <label for="city">City:</label>
+        <input type="text" id="city" name="city" required><br>
+
+        <label for="state">State:</label>
+        <input type="text" id="state" name="state" required><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br>
+
+        <label for="phone">Phone:</label>
+        <input type="tel" id="phone" name="phone" required><br>
+
+        <input type="button" value="Submit" onclick="createCustomer()">
+    </form>
+
+    <script src="script.js"></script>
+</body>
+</html>

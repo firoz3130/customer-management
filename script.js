@@ -1,115 +1,220 @@
-// Global variable to store the bearer token
-let authToken = '';
+let authToken = null;
 
-// Function to handle user login
 function login() {
-    const login_id = document.getElementById('login_id').value;
-    const password = document.getElementById('password').value;
-
-    // Make a POST request to the authentication API
-    // Replace the URL with the actual API endpoint
-    fetch('https://qa2.sunbasedata.com/sunbase/portal/api/assignment_auth.jsp', {
-        method: 'POST',
+    const loginData = {
+        login_id: "test@sunbasedata.com",
+        password: "Test@123",
+    };
+    fetch("/proxy/auth", {
+        method: "POST",
         headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-            "login_id": login_id,
-            "password": password
+        body: JSON.stringify(loginData),
+    })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error("Login failed. Invalid credentials.");
+            }
+            return response.json();
         })
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Store the bearer token in the authToken variable
-        authToken = data.token;
-
-        // Hide the login form and display the create customer form and customer list
-        document.getElementById('loginForm').style.display = 'none';
-        document.getElementById('newCustomerForm').style.display = 'block';
-        document.getElementById('customerTable').style.display = 'block';
-        document.getElementById('createBtn').style.display = 'none';
-        document.getElementById('logoutBtn').style.display = 'block';
-
-        // Get the customer list
-        getCustomerList();
-    })
-    .catch(error => {
-        console.error('Error during login:', error);
-        alert('Invalid username or password. Please try again.');
-    });
-}
-
-// Function to get the list of customers
-function getCustomerList() {
-    // Make a GET request to the API to get the customer list
-    // Replace the URL with the actual API endpoint
-    
-    fetch('https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=get_customer_list', {
-        method: 'GET',
-        headers: {
-            'Authorization': 'Bearer ' + authToken
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Display the customer list in the table
-        const customerTable = document.getElementById('customerTable');
-        customerTable.innerHTML = ''; // Clear previous data
-        data.forEach(customer => {
-            const row = customerTable.insertRow();
-            
-            // Add table cells and populate customer data
-            // Modify this part based on your data structure
+        .then((data) => {
+            authToken = data.token;
+            showCustomerList();
+        })
+        .catch((error) => {
+            console.error("Login error:", error.message);
+            // Handle login error, show error message, etc.
         });
-    })
-    .catch(error => {
-        console.error('Error while fetching customer list:', error);
-    });
 }
+
+
 function createCustomer() {
-    first_name = document.getElementById('first_name').value;
-    last_name= document.getElementById('last_name').value;
-    email = document.getElementById('email').value;
-    phone = document.getElementById('phone').value;
-    address = document.getElementById('address').value;
-    city = document.getElementById('city').value;
-    state = document.getElementById('state').value;
-}
-function updateCustomer(){
-    first_name = document.getElementById('first_name').value;
-    last_name= document.getElementById('last_name').value;
-    email = document.getElementById('email').value;
-    phone = document.getElementById('phone').value;
-    address = document.getElementById('address').value;
-    city = document.getElementById('city').value;
-    state = document.getElementById('state').value;
+    const newCustomerData = {
+        first_name: document.getElementById("firstName").value,
+        last_name: document.getElementById("lastName").value,
+        street: document.getElementById("street").value,
+        address: document.getElementById("address").value,
+        city: document.getElementById("city").value,
+        state: document.getElementById("state").value,
+        email: document.getElementById("email").value,
+        phone: document.getElementById("phone").value,
+    };
 
+    fetch("https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=create", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`,
+        },
+        body: JSON.stringify(newCustomerData),
+    })
+        .then((response) => {
+            if (response.status === 201) {
+                // Customer created successfully
+                showCustomerList();
+            } else if (response.status === 400) {
+                // Validation failed, First Name or Last Name is missing
+                console.error("Customer creation error: First Name or Last Name is missing");
+            } else {
+                // Handle other response codes if needed
+                console.error("Customer creation error:", response.status);
+            }
+        })
+        .catch((error) => {
+            console.error("Customer creation error:", error.message);
+            // Handle customer creation error, show error message, etc.
+        });
 }
-function deleteCustomer(){
-    first_name= document.getElementById('first_name').value.trim();
-    last_name= document.getElementById('last_name').value.trim();
-    email = document.getElementById('email').value.trim();
-    phone = document.getElementById('phone').value.trim();
-    address = document.getElementById('address').value.trim();
-    city = document.getElementById('city').value.trim();
-    state = document.getElementById('state').value.trim();  
-}
-// Other functions: createCustomer(), updateCustomer(), deleteCustomer()
-// These functions will be similar to the getCustomerList() function,
-// but they will use POST requests with appropriate data and headers.
 
-// Function to show the create customer form
+function getCustomerList() {
+    fetch("https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=get_customer_list", {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${authToken}`,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error("Failed to get customer list.");
+            }
+            return response.json();
+        })
+        .then((data) => {
+            // Display the customer list in the table
+            const customerTable = document.getElementById("customerTable");
+            customerTable.innerHTML = ""; // Clear existing content
+            data.forEach((customer) => {
+                const row = customerTable.insertRow();
+                Object.keys(customer).forEach((key) => {
+                    if (key !== "uuid") {
+                        const cell = row.insertCell();
+                        cell.textContent = customer[key];
+                    }
+                });
+                const actionCell = row.insertCell();
+                const deleteButton = document.createElement("button");
+                deleteButton.textContent = "Delete";
+                deleteButton.onclick = function () {
+                    deleteCustomer(customer.uuid);
+                };
+                actionCell.appendChild(deleteButton);
+                const updateButton = document.createElement("button");
+                updateButton.textContent = "Update";
+                updateButton.onclick = function () {
+                    updateCustomer(customer.uuid);
+                };
+                actionCell.appendChild(updateButton);
+            });
+        })
+        .catch((error) => {
+            console.error("Get customer list error:", error.message);
+            // Handle error, show error message, etc.
+        });
+}
+function deleteCustomer(customerUuid) {
+    fetch(`https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=delete&uuid=${customerUuid}`, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${authToken}`,
+        },
+    })
+        .then((response) => {
+            if (response.status === 200) {
+                // Customer deleted successfully
+                showCustomerList();
+            } else if (response.status === 400) {
+                console.error("Customer deletion error: UUID not found");
+            } else {
+                console.error("Customer deletion error:", response.status);
+            }
+        })
+        .catch((error) => {
+            console.error("Customer deletion error:", error.message);
+            // Handle customer deletion error, show error message, etc.
+        });
+}
+
+function updateCustomer(customerUuid) {
+    const updatedCustomerData = {
+        first_name: document.getElementById("firstName").value,
+        last_name: document.getElementById("lastName").value,
+        street: document.getElementById("street").value,
+        address: document.getElementById("address").value,
+        city: document.getElementById("city").value,
+        state: document.getElementById("state").value,
+        email: document.getElementById("email").value,
+        phone: document.getElementById("phone").value,
+    };
+
+    fetch(`https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=update&uuid=${customerUuid}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`,
+        },
+        body: JSON.stringify(updatedCustomerData),
+    })
+        .then((response) => {
+            if (response.status === 200) {
+                // Customer updated successfully
+                showCustomerList();
+            } else if (response.status === 400) {
+                console.error("Customer update error: Body is empty");
+            } else {
+                console.error("Customer update error:", response.status);
+            }
+        })
+        .catch((error) => {
+            console.error("Customer update error:", error.message);
+            // Handle customer update error, show error message, etc.
+        });
+}
+
+// Function to show the customer list and hide the new customer form
+function showCustomerList() {
+    fetch("/proxy/get_customer_list", {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${authToken}`,
+        },
+    })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error("Failed to get customer list.");
+            }
+            return response.json();
+        })
+        .then((data) => {
+            // Display the customer list in the table
+            const customerTable = document.getElementById("customerTable");
+            customerTable.innerHTML = ""; // Clear existing content
+            data.forEach((customer) => {
+                // ... (rest of the code to populate the table)
+            });
+        })
+        .catch((error) => {
+            console.error("Get customer list error:", error.message);
+            // Handle error, show error message, etc.
+        });
+}
+
+// Function to show the new customer form and hide the customer list
 function showCreateForm() {
-    document.getElementById('newCustomerForm').style.display = 'block';
+    document.getElementById("customerTable").style.display = "none";
+    document.getElementById("newCustomerForm").style.display = "block";
 }
 
-// Function to handle user logout
+// Function to logout
 function logout() {
-    // Clear the authToken and reset the UI
-    authToken = '';
-    document.getElementById('loginForm').style.display = 'block';
-    document.getElementById('newCustomerForm').style.display = 'none';
-    document.getElementById('customerTable').style.display = 'none';
-    document.getElementById('createBtn').style.display = 'block';
-    document.getElementById('logoutBtn').style.display = 'none';
+    authToken = null;
+    document.getElementById("loginForm").reset();
+    showLoginForm();
+}
+
+// Function to show the login form and hide the customer list and new customer form
+function showLoginForm() {
+    document.getElementById("customerTable").style.display = "none";
+    document.getElementById("newCustomerForm").style.display = "none";
+    document.getElementById("loginForm").style.display = "block";
 }
